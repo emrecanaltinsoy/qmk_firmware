@@ -315,22 +315,19 @@ static void render_anim_bongocat(void) {
 
     curr_anim_duration = MAX(ANIM_FRAME_DURATION_MIN, ANIM_FRAME_DURATION_MAX - ANIM_FRAME_RATIO * get_current_wpm());
 
-    if (get_current_wpm() != 000) {
-        oled_on(); // not essential but turns on animation OLED with any alpha keypress
-        if (timer_elapsed32(anim_timer) > curr_anim_duration) {
-            anim_timer = timer_read32();
-            animation_phase();
-        }
-        anim_cat_sleep = timer_read32();
-    } else {
-        if (timer_elapsed32(anim_cat_sleep) > OLED_TIMEOUT) {
+    #    if OLED_TIMEOUT > 0
+        /* the animation prevents the normal timeout from occuring */
+        if (last_input_activity_elapsed() > OLED_TIMEOUT && last_led_activity_elapsed() > OLED_TIMEOUT) {
             oled_off();
+            return;
         } else {
-            if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION_BONGOCAT) {
-                anim_timer = timer_read32();
-                animation_phase();
-            }
+            oled_on();
         }
+    #    endif
+
+    if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION_BONGOCAT) {
+        anim_timer = timer_read32();
+        animation_phase();
     }
 }
 
